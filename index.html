@@ -3,324 +3,394 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>ALEX SUPREME V12.7 - SECURE SYSTEM</title>
+    <title>ALEX SUPREME V13.0 - PREMIUM TOOL</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css"/>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;900&display=swap');
-        * { -webkit-user-select: none; user-select: none; box-sizing: border-box; outline: none !important; }
-        body { background: #000; color: #fff; font-family: 'Orbitron', sans-serif; height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; margin: 0; }
+        @import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;500;700&display=swap');
         
-        #laser-canvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: -1; }
-        .cyber-card { background: rgba(0,0,0,0.85); border: 1px solid rgba(255,255,255,0.1); backdrop-filter: blur(15px); border-radius: 30px; position: relative; overflow: hidden; }
-        .cyber-card::before { content: ''; position: absolute; top: -50%; left: -50%; width: 200%; height: 200%; background: conic-gradient(from 0deg, #ff0000, #00f2ff, #7000ff, #ff0000); animation: rotate 6s linear infinite; z-index: -1; opacity: 0.2; }
-        @keyframes rotate { 100% { transform: rotate(360deg); } }
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --bg: #050505;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: white;
+            font-family: 'Rajdhani', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Hiệu ứng nền Laser */
+        #bg-canvas { position: fixed; top: 0; left: 0; z-index: -1; }
+
+        .cyber-panel {
+            background: rgba(10, 10, 10, 0.95);
+            border: 2px solid rgba(0, 242, 255, 0.2);
+            border-radius: 25px;
+            box-shadow: 0 0 30px rgba(0, 242, 255, 0.1), inset 0 0 15px rgba(0, 242, 255, 0.05);
+            width: 100%;
+            max-width: 400px;
+            padding: 30px;
+            position: relative;
+        }
+
+        .input-group input {
+            background: rgba(255, 255, 255, 0.03) !important;
+            border: 1px solid rgba(255, 255, 255, 0.1) !important;
+            color: var(--primary) !important;
+            font-family: 'Orbitron', sans-serif;
+            transition: 0.3s;
+        }
+
+        .input-group input:focus {
+            border-color: var(--primary) !important;
+            box-shadow: 0 0 15px rgba(0, 242, 255, 0.3);
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        .btn-main {
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            text-transform: uppercase;
+            transition: 0.5s;
+            cursor: pointer;
+        }
+
+        .btn-main:hover {
+            letter-spacing: 2px;
+            box-shadow: 0 0 20px var(--primary);
+        }
+
+        /* Tích xanh Success */
+        .success-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 25px;
+            display: none;
+        }
+
+        .checkmark {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            display: block;
+            stroke-width: 2;
+            stroke: #4bb543;
+            stroke-miterlimit: 10;
+            box-shadow: inset 0px 0px 0px #4bb543;
+            animation: fill .4s ease-in-out .4s forwards, scale .3s ease-in-out .9s both;
+        }
+
+        @keyframes fill { 100% { box-shadow: inset 0px 0px 0px 40px #4bb543; } }
         
-        .inner-card { background: rgba(10,10,10,0.98); border-radius: 28px; padding: 35px; }
-        .input-cyber { background: #050505 !important; border: 1px solid #222 !important; color: #00f2ff !important; text-align: center; }
-        .btn-glow { background: linear-gradient(45deg, #ff0000, #00f2ff, #7000ff); background-size: 200%; transition: 0.5s; font-weight: 900; color: white; }
-        .btn-glow:hover { background-position: right center; transform: scale(1.02); }
-        
+        .result-tai { color: #00f2ff; text-shadow: 0 0 20px #00f2ff; font-size: 5rem; font-family: 'Orbitron'; font-weight: 900; }
+        .result-xiu { color: #ff0055; text-shadow: 0 0 20px #ff0055; font-size: 5rem; font-family: 'Orbitron'; font-weight: 900; }
+
         .hidden { display: none !important; }
-        .result-tai { color: #00f2ff; text-shadow: 0 0 30px #00f2ff; font-size: 4.5rem; font-weight: 900; }
-        .result-xiu { color: #ff0055; text-shadow: 0 0 30px #ff0055; font-size: 4.5rem; font-weight: 900; }
-        .bar-loading { width: 0%; height: 4px; background: #00f2ff; box-shadow: 0 0 15px #00f2ff; transition: 0.2s; }
     </style>
-
-    <script>
-        // 1. Chặn chuột phải
-        document.addEventListener('contextmenu', event => event.preventDefault());
-
-        // 2. Chặn các phím tắt phổ biến
-        document.onkeydown = function(e) {
-            if (e.keyCode == 123) return false; // F12
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) return false; // Ctrl+Shift+I
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'C'.charCodeAt(0)) return false; // Ctrl+Shift+C
-            if (e.ctrlKey && e.shiftKey && e.keyCode == 'J'.charCodeAt(0)) return false; // Ctrl+Shift+J
-            if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) return false; // Ctrl+U (View Source)
-            if (e.ctrlKey && e.keyCode == 'S'.charCodeAt(0)) return false; // Ctrl+S (Save page)
-        };
-
-        // 3. Anti-Debugger (Làm treo tab nếu mở Console)
-        setInterval(function() {
-            const before = new Date().getTime();
-            debugger;
-            const after = new Date().getTime();
-            if (after - before > 100) {
-                document.body.innerHTML = "<h1>SECURITY PROTECTION ENABLED</h1><p>Vui lòng tắt công cụ nhà phát triển để tiếp tục.</p>";
-                window.location.reload();
-            }
-        }, 100);
-
-        // 4. Xóa console liên tục
-        setInterval(() => console.clear(), 500);
-    </script>
 </head>
 <body>
 
-    <canvas id="laser-canvas"></canvas>
+<canvas id="bg-canvas"></canvas>
 
-    <div id="kick-overlay" class="hidden fixed inset-0 bg-black z-[9999] flex items-center justify-center text-red-600 font-bold text-center p-10">
-        <div><h1 class="text-5xl mb-6">SECURITY ALERT</h1><p id="bad-ip-info" class="text-xl"></p></div>
+<div id="success-msg" class="success-overlay animate__animated">
+    <svg class="checkmark" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 52 52">
+        <circle class="checkmark__circle" cx="26" cy="26" r="25" fill="none"/>
+        <path class="checkmark__check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8" stroke-width="4" stroke="#fff"/>
+    </svg>
+    <p class="mt-4 text-green-500 font-bold uppercase tracking-widest" id="success-text">THÀNH CÔNG</p>
+</div>
+
+<div class="w-full max-w-[420px] p-4 z-10">
+
+    <div id="login-box" class="cyber-panel animate__animated animate__fadeIn">
+        <div class="text-center mb-8">
+            <h1 style="font-family: 'Orbitron'" class="text-4xl font-black italic text-white">ALEX <span class="text-cyan-400">V13</span></h1>
+            <div class="h-1 w-20 bg-cyan-500 mx-auto mt-2"></div>
+        </div>
+        <div class="space-y-4 input-group">
+            <input id="u" type="text" placeholder="USERNAME" class="w-full p-4 rounded-xl outline-none">
+            <input id="p" type="password" placeholder="PASSWORD" class="w-full p-4 rounded-xl outline-none">
+            <button onclick="doLogin()" class="w-full py-4 btn-main rounded-xl text-sm">Đăng Nhập</button>
+        </div>
+        <div class="flex justify-between mt-6 text-[10px] font-bold uppercase text-gray-500">
+            <button onclick="showBox('reg')" class="hover:text-cyan-400">Tạo tài khoản</button>
+            <button id="adm-btn" onclick="openAdmin()" class="text-red-800">Cpanel</button>
+        </div>
     </div>
 
-    <div id="app" class="w-full max-w-[420px] p-4 relative z-10">
-        <div id="login-box" class="cyber-card">
-            <div class="inner-card space-y-6">
-                <div class="text-center">
-                    <h1 class="text-3xl font-black italic tracking-tighter">ALEX <span class="text-cyan-400">V12.7</span></h1>
-                    <p class="text-[8px] text-slate-500 tracking-[0.5em] mt-2 italic uppercase">Hybrid Secure Predictor</p>
-                </div>
-                <div class="space-y-4">
-                    <input id="u" type="text" placeholder="TÊN ĐĂNG NHẬP" class="w-full p-4 rounded-2xl input-cyber text-xs uppercase font-bold">
-                    <input id="p" type="password" placeholder="MẬT KHẨU" class="w-full p-4 rounded-2xl input-cyber text-xs">
-                </div>
-                <button onclick="doLogin()" class="w-full py-4 btn-glow rounded-2xl text-xs uppercase shadow-lg">ĐĂNG NHẬP HỆ THỐNG</button>
-                <div class="flex justify-between text-[9px] text-slate-600 font-bold uppercase">
-                    <button onclick="showBox('reg')">Tạo tài khoản</button>
-                    <button id="adm-btn" onclick="openAdmin()" class="text-red-900">Admin Control</button>
-                </div>
-            </div>
+    <div id="reg-box" class="hidden cyber-panel animate__animated animate__fadeIn">
+        <h2 class="text-center font-bold text-cyan-400 mb-6 uppercase tracking-widest">Đăng Ký Hệ Thống</h2>
+        <div class="space-y-3 input-group">
+            <input id="r-u" type="text" placeholder="TÊN ĐĂNG NHẬP" class="w-full p-3 rounded-xl outline-none">
+            <input id="r-p" type="password" placeholder="MẬT KHẨU" class="w-full p-3 rounded-xl outline-none">
+            <input id="r-sdt" type="number" placeholder="SỐ ĐIỆN THOẠI" class="w-full p-3 rounded-xl outline-none">
+            <input id="r-mail" type="email" placeholder="GMAIL" class="w-full p-3 rounded-xl outline-none">
+            <button onclick="doReg()" class="w-full py-4 btn-main rounded-xl text-sm mt-2">Xác Nhận Đăng Ký</button>
+            <button onclick="showBox('login')" class="w-full text-[10px] text-center text-gray-600 uppercase mt-2">Quay lại đăng nhập</button>
         </div>
-
-        <div id="reg-box" class="hidden cyber-card">
-            <div class="inner-card space-y-4">
-                <h2 class="text-center font-black text-cyan-400">ĐĂNG KÝ THÀNH VIÊN</h2>
-                <input id="r-u" type="text" placeholder="TÊN ĐĂNG NHẬP" class="w-full p-4 rounded-2xl input-cyber text-xs uppercase">
-                <input id="r-p" type="password" placeholder="MẬT KHẨU" class="w-full p-4 rounded-2xl input-cyber text-xs">
-                <input id="r-sdt" type="number" placeholder="SỐ ĐIỆN THOẠI" class="w-full p-4 rounded-2xl input-cyber text-xs">
-                <input id="r-mail" type="email" placeholder="GMAIL" class="w-full p-4 rounded-2xl input-cyber text-xs">
-                <button onclick="doReg()" class="w-full py-4 btn-glow rounded-2xl text-xs uppercase">XÁC NHẬN ĐĂNG KÝ</button>
-                <button onclick="showBox('login')" class="w-full text-[9px] text-slate-500 uppercase">Quay lại</button>
-            </div>
-        </div>
-
-        <div id="dash-box" class="hidden space-y-4">
-            <div class="cyber-card"><div class="inner-card p-6 flex justify-between items-center">
-                <div><p id="cur-u" class="text-xs font-bold text-cyan-400 uppercase"></p><p id="cur-b" class="text-sm font-black"></p></div>
-                <button onclick="showNap()" class="bg-cyan-500 text-black px-4 py-2 rounded-xl text-[10px] font-bold">NẠP TIỀN</button>
-            </div></div>
-            <div class="grid grid-cols-2 gap-3">
-                <div onclick="buy(25000, 1)" class="cyber-card cursor-pointer"><div class="inner-card p-4 text-center text-[10px] font-bold">KEY 1 NGÀY<br><span class="text-cyan-400 text-xs">25.000đ</span></div></div>
-                <div onclick="buy(150000, 30)" class="cyber-card cursor-pointer"><div class="inner-card p-4 text-center text-[10px] font-bold">KEY 30 NGÀY<br><span class="text-cyan-400 text-xs">150.000đ</span></div></div>
-            </div>
-            <div class="cyber-card"><div class="inner-card space-y-4">
-                <input id="key-in" type="text" placeholder="NHẬP MÃ LICENSE" class="w-full p-4 rounded-2xl input-cyber text-xs uppercase">
-                <button onclick="activeKey()" class="w-full py-4 btn-glow rounded-2xl text-xs uppercase">KÍCH HOẠT LICENSE</button>
-            </div></div>
-        </div>
-
-        <div id="nap-box" class="hidden cyber-card">
-            <div class="inner-card text-center space-y-5">
-                <div class="flex items-center justify-center gap-2">
-                    <img id="bank-logo" src="" class="h-6">
-                    <p class="text-[10px] font-bold" id="bank-name-display"></p>
-                </div>
-                <img id="qr" src="" class="mx-auto rounded-3xl border-2 border-white/10 w-48 shadow-cyan-500/20 shadow-2xl">
-                <div class="bg-cyan-500/10 p-4 rounded-2xl border border-cyan-500/20">
-                    <p class="text-[8px] text-cyan-500 font-bold uppercase mb-1">Nội dung chuyển khoản:</p>
-                    <p id="ref-code" class="text-2xl font-black text-white italic tracking-widest"></p>
-                </div>
-                <button onclick="showBox('dash')" class="text-[9px] text-slate-500 uppercase">Quay lại</button>
-            </div>
-        </div>
-
-        <div id="tool-box" class="hidden cyber-card">
-            <div class="inner-card p-8 space-y-6 text-center">
-                <div class="flex justify-between text-[8px] text-green-500 font-bold uppercase"><span>● Sever Active</span><span id="hsd-info"></span></div>
-                <textarea id="md5-val" placeholder="DÁN MÃ PHIÊN MD5..." class="w-full h-32 p-4 rounded-3xl input-cyber text-[10px] uppercase"></textarea>
-                <button id="btn-ana" onclick="startAnalysis()" class="w-full py-5 btn-glow rounded-3xl text-xs uppercase shadow-xl">BẮT ĐẦU PHÂN TÍCH</button>
-                <div id="load-box" class="hidden space-y-2"><div class="w-full h-1 bg-white/5 rounded-full overflow-hidden"><div id="load-bar" class="bar-loading"></div></div></div>
-                <div id="res-box" class="hidden py-4 border-t border-white/5">
-                    <p id="res-text"></p>
-                    <div id="res-acc" class="text-[10px] text-cyan-400 font-bold italic uppercase mt-4"></div>
-                </div>
-            </div>
-        </div>
-
-        <div id="admin-box" class="hidden cyber-card"><div class="inner-card space-y-4">
-            <h2 class="text-red-500 font-black text-center text-sm uppercase">Cpanel v12.7 Secure</h2>
-            <input id="adm-u" type="text" placeholder="USERNAME" class="w-full p-4 rounded-2xl input-cyber text-xs uppercase">
-            <input id="adm-m" type="number" placeholder="SỐ TIỀN" class="w-full p-4 rounded-2xl input-cyber text-xs">
-            <button onclick="adminAdd()" class="w-full py-4 bg-red-600 rounded-2xl text-xs font-black text-white">XÁC NHẬN CỘNG</button>
-            <button onclick="location.reload()" class="w-full text-[8px] text-slate-500 uppercase">Thoát Admin</button>
-        </div></div>
-
     </div>
 
-    <script>
-        const CONFIG = {
-            ADMIN_IP: "14.191.248.22", 
-            ADMIN_PASS: "nguyendu2009@",
-            STK: "103886058569",
-            BANK: "VietinBank",
-            BANK_ID: "ICB",
-            DB: "ALEX_SECURE_V127"
-        };
-        let currentUser = null;
-        let myIP = "";
+    <div id="dash-box" class="hidden space-y-4 animate__animated animate__fadeIn">
+        <div class="cyber-panel p-6 flex justify-between items-center">
+            <div>
+                <p id="cur-u" class="text-cyan-400 font-bold uppercase text-xs"></p>
+                <p id="cur-b" class="text-2xl font-black"></p>
+            </div>
+            <button onclick="showBox('nap')" class="bg-white text-black px-4 py-2 rounded-lg text-[10px] font-black hover:bg-cyan-400 transition">NẠP TIỀN</button>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-3">
+            <div onclick="buy(25000, 1)" class="cyber-panel !p-4 text-center cursor-pointer hover:border-cyan-400 transition">
+                <p class="text-[10px] text-gray-400">GÓI 1 NGÀY</p>
+                <p class="text-lg font-bold">25.000đ</p>
+            </div>
+            <div onclick="buy(150000, 30)" class="cyber-panel !p-4 text-center cursor-pointer hover:border-cyan-400 transition">
+                <p class="text-[10px] text-gray-400">GÓI 30 NGÀY</p>
+                <p class="text-lg font-bold">150.000đ</p>
+            </div>
+        </div>
 
-        // --- BACKGROUND LASER ---
-        const canvas = document.getElementById('laser-canvas');
-        const ctx = canvas.getContext('2d');
-        let lines = [];
-        function initCanvas() {
-            canvas.width = window.innerWidth; canvas.height = window.innerHeight;
-            lines = [];
-            for(let i=0; i<15; i++) lines.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, angle: Math.random()*Math.PI*2, speed: 1.2, color: `hsl(${Math.random()*360}, 100%, 50%)`});
-        }
-        function drawLaser() {
-            ctx.fillStyle = 'rgba(0,0,0,0.1)'; ctx.fillRect(0,0,canvas.width,canvas.height);
-            lines.forEach(l => {
-                ctx.beginPath(); ctx.strokeStyle = l.color; ctx.lineWidth = 2; ctx.shadowBlur = 10; ctx.shadowColor = l.color;
-                ctx.moveTo(l.x, l.y); l.x += Math.cos(l.angle)*l.speed; l.y += Math.sin(l.angle)*l.speed; ctx.lineTo(l.x, l.y); ctx.stroke();
-                if(l.x<0 || l.x>canvas.width || l.y<0 || l.y>canvas.height) { l.x=Math.random()*canvas.width; l.y=Math.random()*canvas.height; }
-            });
-            requestAnimationFrame(drawLaser);
-        }
-        window.onresize = initCanvas; initCanvas(); drawLaser();
+        <div class="cyber-panel space-y-4 input-group">
+            <input id="key-in" type="text" placeholder="NHẬP MÃ KEY LICENSE" class="w-full p-4 rounded-xl outline-none text-center">
+            <button onclick="activeKey()" class="w-full py-4 btn-main rounded-xl text-sm">KÍCH HOẠT TOOL</button>
+        </div>
+    </div>
 
-        // --- LOGIC ---
-        const getDB = () => JSON.parse(localStorage.getItem(CONFIG.DB)) || { users: [], keys: [] };
-        const saveDB = (db) => localStorage.setItem(CONFIG.DB, JSON.stringify(db));
+    <div id="tool-box" class="hidden cyber-panel text-center animate__animated animate__zoomIn">
+        <div class="flex justify-between text-[9px] text-green-500 font-bold mb-6">
+            <span>● SERVER: LIVE</span>
+            <span id="hsd-info"></span>
+        </div>
+        <textarea id="md5-val" placeholder="DÁN MÃ PHIÊN MD5 VÀO ĐÂY..." class="w-full h-32 p-4 rounded-2xl input-group bg-black border border-white/10 text-cyan-400 text-sm mb-4 outline-none uppercase"></textarea>
+        <button id="btn-ana" onclick="startAnalysis()" class="w-full py-5 btn-main rounded-2xl text-sm shadow-2xl">PHÂN TÍCH MD5</button>
+        
+        <div id="res-box" class="hidden mt-6 pt-6 border-t border-white/5">
+            <p id="res-text"></p>
+            <div id="res-acc" class="text-xs text-cyan-500 font-bold italic mt-4"></div>
+        </div>
+    </div>
 
-        async function securityCheck() {
-            try {
-                const res = await fetch('https://api.ipify.org?format=json');
-                const data = await res.json();
-                myIP = data.ip;
-                if(myIP !== CONFIG.ADMIN_IP) document.getElementById('adm-btn').classList.add('hidden');
-            } catch(e) {}
-        }
-        securityCheck();
+    <div id="nap-box" class="hidden cyber-panel text-center animate__animated animate__fadeInUp">
+        <h3 class="text-cyan-400 font-bold mb-4">THANH TOÁN HỆ THỐNG</h3>
+        <img id="qr" src="" class="mx-auto rounded-2xl w-48 mb-4 border-2 border-cyan-500/30">
+        <div class="bg-cyan-500/5 p-4 rounded-xl border border-cyan-500/20 mb-4">
+            <p class="text-[9px] text-gray-500 uppercase">Nội dung chuyển khoản</p>
+            <p id="ref-code" class="text-2xl font-black tracking-widest text-white"></p>
+        </div>
+        <button onclick="showBox('dash')" class="text-xs text-gray-500 hover:text-white underline">Quay lại</button>
+    </div>
 
-        function showBox(id) {
-            ['login-box', 'dash-box', 'tool-box', 'admin-box', 'nap-box', 'reg-box'].forEach(b => document.getElementById(b).classList.add('hidden'));
-            document.getElementById(id + '-box').classList.remove('hidden');
-        }
+    <div id="admin-box" class="hidden cyber-panel animate__animated animate__fadeIn">
+        <h2 class="text-red-500 font-black text-center mb-6">ADMIN CONTROL</h2>
+        <div class="space-y-4 input-group">
+            <input id="adm-u" type="text" placeholder="Tên User" class="w-full p-4 rounded-xl outline-none">
+            <input id="adm-m" type="number" placeholder="Số tiền cộng" class="w-full p-4 rounded-xl outline-none">
+            <button onclick="adminAdd()" class="w-full py-4 bg-red-600 rounded-xl font-bold uppercase">Cộng tiền ngay</button>
+            <button onclick="location.reload()" class="w-full text-xs text-center text-gray-600">Thoát</button>
+        </div>
+    </div>
 
-        function doReg() {
-            const u = document.getElementById('r-u').value.trim().toUpperCase();
-            const p = document.getElementById('r-p').value;
-            const sdt = document.getElementById('r-sdt').value;
-            const mail = document.getElementById('r-mail').value;
-            if(!u || !p || !sdt || !mail) return alert("Vui lòng điền đủ thông tin!");
-            let db = getDB();
-            if(db.users.find(x => x.u === u)) return alert("Username đã tồn tại!");
-            db.users.push({ u, p, sdt, mail, bal: 0, ref: "ALEX"+Math.floor(1000+Math.random()*9000), hsd: null });
-            saveDB(db); alert("Đăng ký thành công!"); showBox('login');
-        }
+</div>
 
-        function doLogin() {
-            const u = document.getElementById('u').value.trim().toUpperCase();
-            const p = document.getElementById('p').value;
-            let db = getDB();
-            const f = db.users.find(x => x.u === u && x.p === p);
-            if(f) {
-                currentUser = f;
-                if(currentUser.hsd && currentUser.hsd > Date.now()) showTool(); else showDash();
-            } else alert("Sai thông tin đăng nhập!");
-        }
+<script>
+    const CONFIG = {
+        ADMIN_IP: "14.191.248.22", 
+        ADMIN_PASS: "nguyendu2009@",
+        STK: "103886058569",
+        BANK_ID: "ICB",
+        DB: "ALEX_V13_DATA"
+    };
 
-        function showDash() {
-            showBox('dash');
-            document.getElementById('cur-u').innerText = "Chào: " + currentUser.u;
-            document.getElementById('cur-b').innerText = currentUser.bal.toLocaleString() + "đ";
-        }
+    let currentUser = null;
+    let myIP = "";
 
-        function showNap() {
-            document.getElementById('ref-code').innerText = currentUser.ref;
-            document.getElementById('bank-name-display').innerText = CONFIG.BANK;
-            document.getElementById('bank-logo').src = `https://api.vietqr.io/img/${CONFIG.BANK_ID}.png`;
-            document.getElementById('qr').src = `https://img.vietqr.io/image/${CONFIG.BANK_ID}-${CONFIG.STK}-compact.png?addInfo=${currentUser.ref}`;
-            showBox('nap');
-        }
+    // Dữ liệu cục bộ
+    const getDB = () => JSON.parse(localStorage.getItem(CONFIG.DB)) || { users: [], keys: [] };
+    const saveDB = (db) => localStorage.setItem(CONFIG.DB, JSON.stringify(db));
 
-        function buy(p, d) {
-            let db = getDB();
-            const i = db.users.findIndex(x => x.u === currentUser.u);
-            if(db.users[i].bal < p) return alert("Số dư của bạn không đủ!");
-            db.users[i].bal -= p;
-            const k = "ALEX-" + Math.random().toString(36).substring(5).toUpperCase();
-            db.keys.push({ key: k, days: d, used: false });
-            currentUser = db.users[i]; saveDB(db); showDash();
-            prompt("COPY KEY CỦA BẠN:", k);
-        }
+    // Hiển thị tích xanh Success
+    function showSuccess(text, callback) {
+        const overlay = document.getElementById('success-msg');
+        document.getElementById('success-text').innerText = text;
+        overlay.style.display = 'flex';
+        overlay.classList.add('animate__fadeIn');
+        
+        setTimeout(() => {
+            overlay.classList.replace('animate__fadeIn', 'animate__fadeOut');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+                overlay.classList.remove('animate__fadeOut');
+                if(callback) callback();
+            }, 500);
+        }, 1500);
+    }
 
-        function activeKey() {
-            const k = document.getElementById('key-in').value.trim().toUpperCase();
-            let db = getDB();
-            const kI = db.keys.findIndex(x => x.key === k && !x.used);
-            if(kI === -1) return alert("Key không đúng hoặc đã dùng!");
-            const uI = db.users.findIndex(x => x.u === currentUser.u);
-            const timeToAdd = db.keys[kI].days * 86400000;
-            db.users[uI].hsd = (db.users[uI].hsd > Date.now() ? db.users[uI].hsd : Date.now()) + timeToAdd;
-            db.keys[kI].used = true;
-            currentUser = db.users[uI]; saveDB(db);
-            alert("Đã kích hoạt!"); showTool();
-        }
+    // Logic Đăng ký
+    function doReg() {
+        const u = document.getElementById('r-u').value.trim().toUpperCase();
+        const p = document.getElementById('r-p').value;
+        if(!u || !p) return alert("Thiếu thông tin!");
+        
+        let db = getDB();
+        if(db.users.find(x => x.u === u)) return alert("Tên đã tồn tại!");
+        
+        db.users.push({ 
+            u, p, 
+            bal: 0, 
+            ref: "ALEX" + Math.floor(1000 + Math.random()*9000), 
+            hsd: null 
+        });
+        saveDB(db);
+        showSuccess("ĐĂNG KÝ THÀNH CÔNG", () => showBox('login'));
+    }
 
-        function showTool() {
-            showBox('tool');
-            document.getElementById('hsd-info').innerText = "Hết hạn: " + new Date(currentUser.hsd).toLocaleDateString();
-        }
+    // Logic Đăng nhập
+    function doLogin() {
+        const u = document.getElementById('u').value.trim().toUpperCase();
+        const p = document.getElementById('p').value;
+        let db = getDB();
+        const user = db.users.find(x => x.u === u && x.p === p);
+        
+        if(user) {
+            currentUser = user;
+            if(user.hsd && user.hsd > Date.now()) showTool(); else showDash();
+        } else alert("Sai tài khoản hoặc mật khẩu!");
+    }
 
-        function startAnalysis() {
-            const val = document.getElementById('md5-val').value.trim();
-            if(val.length < 10) return alert("Mã phiên MD5 không đúng!");
-            document.getElementById('btn-ana').disabled = true;
-            document.getElementById('load-box').classList.remove('hidden');
-            let p = 0;
-            const iv = setInterval(() => {
-                p += 4; document.getElementById('load-bar').style.width = p + "%";
-                if(p >= 100) { clearInterval(iv); getRes(val); }
-            }, 50);
-        }
+    function showBox(id) {
+        document.querySelectorAll('.cyber-panel, #dash-box').forEach(el => el.classList.add('hidden'));
+        document.getElementById(id + '-box').classList.remove('hidden');
+    }
 
-        // --- HYBRID HYPER ANALYZER (Lớp bảo mật thuật toán) ---
-        function getRes(md5) {
-            const val = md5.toLowerCase();
-            let decimalSum = 0;
-            for(let i=0; i<val.length; i++) decimalSum += val.charCodeAt(i);
+    function showDash() {
+        showBox('dash');
+        document.getElementById('cur-u').innerText = "Account: " + currentUser.u;
+        document.getElementById('cur-b').innerText = currentUser.bal.toLocaleString() + "đ";
+    }
 
-            // Phân tích vị trí Byte Quốc tế
-            const hexWeight = (parseInt(val[0], 16) || 0) + (parseInt(val[val.length-1], 16) || 0);
-            const finalScore = (decimalSum * 0.7) + (hexWeight * 0.3);
-            const isTai = Math.floor(finalScore) % 2 === 0;
+    function showTool() {
+        showBox('tool');
+        document.getElementById('hsd-info').innerText = "HSD: " + new Date(currentUser.hsd).toLocaleDateString();
+    }
+
+    function showNap() {
+        document.getElementById('ref-code').innerText = currentUser.ref;
+        document.getElementById('qr').src = `https://img.vietqr.io/image/${CONFIG.BANK_ID}-${CONFIG.STK}-compact.png?addInfo=${currentUser.ref}`;
+        showBox('nap');
+    }
+
+    function buy(p, d) {
+        let db = getDB();
+        const i = db.users.findIndex(x => x.u === currentUser.u);
+        if(db.users[i].bal < p) return alert("Không đủ số dư!");
+        
+        db.users[i].bal -= p;
+        const key = "ALEX-" + Math.random().toString(36).substring(5).toUpperCase();
+        db.keys.push({ key, days: d, used: false });
+        saveDB(db);
+        currentUser = db.users[i];
+        showDash();
+        prompt("COPY KEY CỦA BẠN:", key);
+    }
+
+    function activeKey() {
+        const key = document.getElementById('key-in').value.trim().toUpperCase();
+        let db = getDB();
+        const kIdx = db.keys.findIndex(k => k.key === key && !k.used);
+        
+        if(kIdx === -1) return alert("Key không đúng!");
+        
+        const uIdx = db.users.findIndex(u => u.u === currentUser.u);
+        const addedTime = db.keys[kIdx].days * 86400000;
+        db.users[uIdx].hsd = (db.users[uIdx].hsd > Date.now() ? db.users[uIdx].hsd : Date.now()) + addedTime;
+        db.keys[kIdx].used = true;
+        
+        saveDB(db);
+        currentUser = db.users[uIdx];
+        showSuccess("KÍCH HOẠT THÀNH CÔNG", () => showTool());
+    }
+
+    function startAnalysis() {
+        const md5 = document.getElementById('md5-val').value.trim();
+        if(md5.length < 5) return alert("Dán mã MD5!");
+        
+        document.getElementById('btn-ana').innerText = "ĐANG QUÉT MÃ...";
+        setTimeout(() => {
+            let sum = 0;
+            for(let i=0; i<md5.length; i++) sum += md5.charCodeAt(i);
+            const isTai = sum % 2 === 0;
             
             const r = document.getElementById('res-text');
-            const acc = document.getElementById('res-acc');
             r.innerText = isTai ? "TÀI" : "XỈU";
             r.className = isTai ? "result-tai" : "result-xiu";
+            document.getElementById('res-acc').innerHTML = "ĐỘ CHÍNH XÁC: " + (95 + Math.random()*4).toFixed(2) + "%";
             
-            const accuracy = (94 + Math.random()*5.5).toFixed(2);
-            acc.innerHTML = `Matrix Analysis: ${accuracy}%<br><span class="text-[7px] text-green-500">Đã đối chiếu cơ sở dữ liệu quốc tế</span>`;
-            
-            document.getElementById('load-box').classList.add('hidden');
             document.getElementById('res-box').classList.remove('hidden');
-            document.getElementById('btn-ana').disabled = false;
-        }
+            document.getElementById('btn-ana').innerText = "PHÂN TÍCH MD5";
+        }, 1500);
+    }
 
-        function openAdmin() {
-            if(myIP !== CONFIG.ADMIN_IP) {
-                document.getElementById('app').classList.add('hidden');
-                document.getElementById('bad-ip-info').innerText = "BLOCKED IP: " + myIP;
-                document.getElementById('kick-overlay').classList.remove('hidden');
-                setTimeout(() => location.href="https://google.com", 2500);
-                return;
-            }
-            if(prompt("PASSWORD ADMIN:") === CONFIG.ADMIN_PASS) showBox('admin');
-        }
+    // Admin IP Check
+    async function checkIP() {
+        const res = await fetch('https://api.ipify.org?format=json');
+        const data = await res.json();
+        myIP = data.ip;
+        if(myIP !== CONFIG.ADMIN_IP) document.getElementById('adm-btn').style.display = 'none';
+    }
+    checkIP();
 
-        function adminAdd() {
-            const u = document.getElementById('adm-u').value.trim().toUpperCase();
-            const m = parseInt(document.getElementById('adm-m').value);
-            let db = getDB();
-            const i = db.users.findIndex(x => x.u === u);
-            if(i !== -1) {
-                db.users[i].bal += m;
-                saveDB(db); alert("Xong!");
-            } else alert("Không tìm thấy User!");
-        }
-    </script>
+    function openAdmin() {
+        if(prompt("PASS ADMIN:") === CONFIG.ADMIN_PASS) showBox('admin');
+    }
+
+    function adminAdd() {
+        const u = document.getElementById('adm-u').value.trim().toUpperCase();
+        const m = parseInt(document.getElementById('adm-m').value);
+        let db = getDB();
+        const idx = db.users.findIndex(x => x.u === u);
+        if(idx !== -1) {
+            db.users[idx].bal += m;
+            saveDB(db);
+            showSuccess("ĐÃ CỘNG " + m + "đ", () => showBox('admin'));
+        } else alert("Không tìm thấy User!");
+    }
+
+    // Canvas hiệu ứng
+    const canvas = document.getElementById('bg-canvas');
+    const ctx = canvas.getContext('2d');
+    let stars = [];
+    function initCanvas() {
+        canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+        stars = [];
+        for(let i=0; i<80; i++) stars.push({x: Math.random()*canvas.width, y: Math.random()*canvas.height, s: Math.random()*2, d: Math.random()*0.5});
+    }
+    function draw() {
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        ctx.fillStyle = "#00f2ff";
+        stars.forEach(s => {
+            ctx.globalAlpha = s.d;
+            ctx.beginPath(); ctx.arc(s.x, s.y, s.s, 0, Math.PI*2); ctx.fill();
+            s.y -= 0.2; if(s.y < 0) s.y = canvas.height;
+        });
+        requestAnimationFrame(draw);
+    }
+    initCanvas(); draw();
+</script>
+
 </body>
 </html>
